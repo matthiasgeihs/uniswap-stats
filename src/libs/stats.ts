@@ -5,7 +5,7 @@ import { PoolFactory } from './factory'
 import { LiquidityPool } from './pool'
 import {
   getCurrencyAmounts,
-  getCurrentAmounts2,
+  getCurrentAmounts,
   getPriceFromSqrtPriceX96,
   newTokenFromTokenAddress,
 } from './util'
@@ -39,7 +39,7 @@ export async function getLiquidityPositionStats(
     token1
   )
 
-  const current = getCurrentAmounts2(
+  const current = getCurrentAmounts(
     position.liquidity,
     slot0.sqrtPriceX96,
     position.tickLower,
