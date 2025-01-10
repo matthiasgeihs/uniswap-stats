@@ -9,6 +9,7 @@ const App = () => {
   const [positionId, setPositionId] = useState<number | null>(1628115)
   const [stats, setStats] = useState<LiquidityPositionStats | null>(null)
   const [statsText, setStatsText] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (stats === null) {
@@ -30,9 +31,14 @@ const App = () => {
       return
     }
 
-    const provider = getProvider()
-    const stats = await getLiquidityPositionStats(provider, positionId)
-    setStats(stats)
+    setLoading(true)
+    try {
+      const provider = getProvider()
+      const stats = await getLiquidityPositionStats(provider, positionId)
+      setStats(stats)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -42,17 +48,24 @@ const App = () => {
         onChange={(e) => setPositionId(parseInt(e.target.value))}
         value={positionId?.toString()}
         placeholder="Liquidity Position ID"
+        style={{ textAlign: 'center' }}
       />
       <button onClick={handleGetStatsClick}>
         Get Liquidity Position Stats
       </button>
-      <h3>Liquidity Position Stats</h3>
-      Position Id: {positionId}
-      <div>
-        {statsText.map((stat, index) => (
-          <p key={index}>{stat}</p>
+
+      {(loading && (
+        <div className="loader" style={{ margin: '20px 0' }}></div>
+      )) ||
+        (stats && (
+          <div>
+            <h3>Liquidity Position Stats</h3>
+            Position Id: {positionId}
+            {statsText.map((stat, index) => (
+              <p key={index}>{stat}</p>
+            ))}
+          </div>
         ))}
-      </div>
     </div>
   )
 }
