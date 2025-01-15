@@ -7,6 +7,7 @@ export type LiquidityPositionStats = {
   currentPrice: Price<Token, Token>
   uncollected: CurrencyAmount<Token>[]
   current: CurrencyAmount<Token>[]
+  deposited: CurrencyAmount<Token>[]
 }
 
 export type LiquidityPosition = {

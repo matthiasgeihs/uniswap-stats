@@ -3,6 +3,8 @@ import { CurrencyAmount, Fraction, Price, Token } from '@uniswap/sdk-core'
 import { ERC20 } from '../token'
 import { TickMath } from '@uniswap/v3-sdk'
 import JSBI from 'jsbi'
+import { getEvents } from '../event'
+import { LiquidityPositionManager } from '../manager'
 
 export function getPriceFromSqrtPriceX96(
   sqrtPriceX96: BigNumber,
@@ -114,4 +116,48 @@ export function getCurrentAmounts(
   )
 
   return [amount0, amount1]
+}
+
+async function getIncreaseLiquidityEvents(
+  provider: providers.Provider,
+  tokenId: BigNumber
+) {
+  const positionManager = new LiquidityPositionManager(provider)
+  const eventFilter =
+    positionManager.contract.filters.IncreaseLiquidity(tokenId)
+
+  const logToEvent = (log: providers.Log) => {
+    const parsed = positionManager.contract.interface.parseLog(log)
+    return {
+      amount0: parsed.args.amount0,
+      amount1: parsed.args.amount1,
+      tickLower: parsed.args.tickLower,
+      tickUpper: parsed.args.tickUpper,
+    }
+  }
+
+  const events = await getEvents(provider, tokenId, eventFilter, logToEvent)
+  return events
+}
+
+export async function getDeposited(
+  provider: providers.Provider,
+  positionId: BigNumber
+): Promise<{
+  amount0: BigNumber
+  amount1: BigNumber
+  avgPrice: Fraction
+}> {
+  const events = await getIncreaseLiquidityEvents(provider, positionId)
+
+  const totalAmount0 = BigNumber.from(0)
+  const totalAmount1 = BigNumber.from(0)
+
+  for (const event of events) {
+    totalAmount0.add(event.amount0)
+    totalAmount1.add(event.amount1)
+  }
+
+  const avgPrice = new Fraction(0) // TODO calculate from amounts and liquidity?
+  return { amount0: totalAmount0, amount1: totalAmount1, avgPrice }
 }

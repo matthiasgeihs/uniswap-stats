@@ -1,4 +1,4 @@
-import { providers } from 'ethers'
+import { BigNumber, BigNumberish, providers } from 'ethers'
 import { LiquidityPositionStats } from './types'
 import { LiquidityPositionManager } from './manager'
 import { PoolFactory } from './factory'
@@ -6,6 +6,7 @@ import { LiquidityPool } from './pool'
 import {
   getCurrencyAmounts,
   getCurrentAmounts,
+  getDeposited,
   getPriceFromSqrtPriceX96,
   newTokenFromTokenAddress,
 } from './util/uniswap'
@@ -13,7 +14,7 @@ import { tickToPrice } from '@uniswap/v3-sdk'
 
 export async function getLiquidityPositionStats(
   provider: providers.Provider,
-  positionId: number
+  positionId: BigNumberish
 ): Promise<LiquidityPositionStats> {
   const manager = new LiquidityPositionManager(provider)
   const position = await manager.getLiquidityPosition(positionId)
@@ -56,13 +57,20 @@ export async function getLiquidityPositionStats(
     uncollectedRaw.amount1
   )
 
-  const deposited = await getDeposited(...)
+  const depositedRaw = await getDeposited(provider, BigNumber.from(positionId))
+  const deposited = getCurrencyAmounts(
+    token0,
+    depositedRaw.amount0,
+    token1,
+    depositedRaw.amount1
+  )
 
   return {
     lowerTickPrice,
     upperTickPrice,
-    currentPrice: currentPrice,
-    uncollected: uncollected,
-    current: current,
+    currentPrice,
+    uncollected,
+    current,
+    deposited,
   }
 }
