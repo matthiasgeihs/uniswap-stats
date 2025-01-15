@@ -1,6 +1,6 @@
 import { BigNumber, BigNumberish, providers } from 'ethers'
 import { CurrencyAmount, Fraction, Price, Token } from '@uniswap/sdk-core'
-import { ERC20 } from './token'
+import { ERC20 } from '../token'
 import { TickMath } from '@uniswap/v3-sdk'
 import JSBI from 'jsbi'
 

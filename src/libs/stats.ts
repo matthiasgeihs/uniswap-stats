@@ -8,7 +8,7 @@ import {
   getCurrentAmounts,
   getPriceFromSqrtPriceX96,
   newTokenFromTokenAddress,
-} from './util'
+} from './util/uniswap'
 import { tickToPrice } from '@uniswap/v3-sdk'
 
 export async function getLiquidityPositionStats(
@@ -55,6 +55,8 @@ export async function getLiquidityPositionStats(
     token1,
     uncollectedRaw.amount1
   )
+
+  const deposited = await getDeposited(...)
 
   return {
     lowerTickPrice,

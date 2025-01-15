@@ -33,4 +33,8 @@ export class LiquidityPositionManager {
       maxAmount,
     ])
   }
+
+  async ownerOf(positionId: BigNumberish): Promise<string> {
+    return this.contract.ownerOf(positionId)
+  }
 }

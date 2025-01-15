@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import './App.css'
 import { getLiquidityPositionStats } from '../libs/stats'
 import { getProvider } from '../libs/provider'
-import { formatBaseCurrencyPrice, formatCurrencyAmounts } from '../libs/util'
+import { formatBaseCurrencyPrice, formatCurrencyAmounts } from '../libs/util/uniswap'
 import { LiquidityPositionStats } from '../libs/types'
 
 const App = () => {
