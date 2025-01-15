@@ -70,35 +70,6 @@ export function getCurrentAmounts(
   token0: Token,
   token1: Token
 ): CurrencyAmount<Token>[] {
-  // if (curPrice.lessThan(lowerTickPrice)) {
-  //   // Out of range, all in token0
-  //   // amount0 = liquidity * (price_upper - price_lower) / (price_lower * price_upper)
-  //   // amount1 = 0
-  //   const num = upperTickPrice.subtract(lowerTickPrice)
-  //   const denom = lowerTickPrice.multiply(upperTickPrice)
-  //   const frac = num.divide(denom).multiply(liquidity.toString())
-  //   const amount0 = CurrencyAmount.fromFractionalAmount(
-  //     curPrice.baseCurrency,
-  //     frac.numerator,
-  //     frac.denominator
-  //   )
-  //   const amount1 = CurrencyAmount.fromRawAmount(curPrice.quoteCurrency, 0)
-  //   return [amount0, amount1]
-  // } else if (curPrice.greaterThan(upperTickPrice)) {
-  //   // Out of range, all in token1
-  //   // amount0 = 0
-  //   // amount1 = liquidity * (price_upper - price_lower)
-  //   const amount0 = CurrencyAmount.fromRawAmount(curPrice.baseCurrency, 0)
-  //   const num = upperTickPrice.subtract(lowerTickPrice)
-  //   const frac = num.multiply(liquidity.toString())
-  //   const amount1 = CurrencyAmount.fromFractionalAmount(
-  //     curPrice.quoteCurrency,
-  //     frac.numerator,
-  //     frac.denominator
-  //   )
-  //   return [amount0, amount1]
-  // }
-
   const liquidityJSBI = JSBI.BigInt(liquidity.toString())
   const curPriceSqrtX96JSBI = JSBI.BigInt(curPriceSqrtX96.toString())
   const Q96 = JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(96))
@@ -106,27 +77,26 @@ export function getCurrentAmounts(
   const lowerTickSqrtPriceX96 = TickMath.getSqrtRatioAtTick(lowerTick)
   const upperTickSqrtPriceX96 = TickMath.getSqrtRatioAtTick(upperTick)
 
-  // If out of range, throw error.
-  if (
-    JSBI.lessThan(curPriceSqrtX96JSBI, lowerTickSqrtPriceX96) ||
-    JSBI.greaterThan(curPriceSqrtX96JSBI, upperTickSqrtPriceX96)
-  ) {
-    // TODO implement
-    throw new Error('Current price is out of range')
-  }
+  const curPriceBoundedSqrtX96 = (() => {
+    if (JSBI.lessThan(curPriceSqrtX96JSBI, lowerTickSqrtPriceX96)) {
+      return lowerTickSqrtPriceX96
+    } else if (JSBI.greaterThan(curPriceSqrtX96JSBI, upperTickSqrtPriceX96)) {
+      return upperTickSqrtPriceX96
+    }
+    return curPriceSqrtX96JSBI
+  })()
 
-  // In range, split liquidity
   // amount0 = liquidity * (sqrt_price_upper - sqrt_price_current) / (sqrt_price_current * sqrt_price_upper)
-  // amount1 = liquidity * (sqrt_price_current - sqrt_price_lower)
   const amount0Frac = (() => {
-    const num = JSBI.subtract(upperTickSqrtPriceX96, curPriceSqrtX96JSBI)
-    const denom = JSBI.multiply(curPriceSqrtX96JSBI, upperTickSqrtPriceX96)
+    const num = JSBI.subtract(upperTickSqrtPriceX96, curPriceBoundedSqrtX96)
+    const denom = JSBI.multiply(curPriceBoundedSqrtX96, upperTickSqrtPriceX96)
     const frac = new Fraction(num, denom).multiply(Q96)
     return frac.multiply(liquidityJSBI)
   })()
 
+  // amount1 = liquidity * (sqrt_price_current - sqrt_price_lower)
   const amount1Frac = (() => {
-    const num = JSBI.subtract(curPriceSqrtX96JSBI, lowerTickSqrtPriceX96)
+    const num = JSBI.subtract(curPriceBoundedSqrtX96, lowerTickSqrtPriceX96)
     const denom = Q96
     const frac = new Fraction(num, denom)
     return frac.multiply(liquidityJSBI)
