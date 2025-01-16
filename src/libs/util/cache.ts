@@ -11,7 +11,7 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber'
 import { Deferrable } from '@ethersproject/properties'
 
 export class CachedProvider extends providers.Provider {
-  private cache: Map<string, any>
+  private cache: Map<string, unknown>
   private provider: Provider
 
   constructor(provider: Provider) {
@@ -22,19 +22,19 @@ export class CachedProvider extends providers.Provider {
 
   // Cache
 
-  private createCacheKey(method: string, params: any[]): string {
+  private createCacheKey(method: string, params: unknown[]): string {
     return `${method}:${JSON.stringify(params)}`
   }
 
   private async getCached<T>(
     method: string,
-    params: any[],
+    params: unknown[],
     fetch: () => Promise<T>
   ): Promise<T> {
     const cacheKey = this.createCacheKey(method, params)
 
     if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)
+      return this.cache.get(cacheKey) as T
     }
 
     const result = await fetch()
@@ -214,7 +214,7 @@ export class CachedProvider extends providers.Provider {
     return this
   }
 
-  emit(eventName: providers.EventType, ...args: any[]): boolean {
+  emit(eventName: providers.EventType, ...args: unknown[]): boolean {
     return this.provider.emit(eventName, ...args)
   }
 
