@@ -13,11 +13,18 @@ import { Deferrable } from '@ethersproject/properties'
 export class CachedProvider extends providers.Provider {
   private cache: Map<string, unknown>
   private provider: Provider
+  private cacheUpdateCallback?: () => Promise<void>
 
   constructor(provider: Provider) {
     super()
     this.provider = provider
     this.cache = new Map()
+  }
+
+  // Callbacks
+
+  onCacheUpdate(callback: () => Promise<void>) {
+    this.cacheUpdateCallback = callback
   }
 
   // Cache
@@ -34,16 +41,25 @@ export class CachedProvider extends providers.Provider {
     const cacheKey = this.createCacheKey(method, params)
 
     if (this.cache.has(cacheKey)) {
+      console.log('Cache hit:', cacheKey)
       return this.cache.get(cacheKey) as T
     }
 
     const result = await fetch()
     this.cache.set(cacheKey, result)
+    if (this.cacheUpdateCallback) {
+      await this.cacheUpdateCallback()
+    }
     return result
   }
 
-  clearCache(): void {
-    this.cache.clear()
+  serializeCache(): string {
+    return JSON.stringify(Array.from(this.cache.entries()))
+  }
+
+  deserializeCache(serializedCache: string): void {
+    const entries = JSON.parse(serializedCache)
+    this.cache = new Map(entries)
   }
 
   // Network
