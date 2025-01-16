@@ -49,23 +49,21 @@ export class CachedProvider extends providers.Provider {
   // Network
 
   async getNetwork(): Promise<providers.Network> {
-    return this.getCached('getNetwork', [], () => this.provider.getNetwork())
+    return this.provider.getNetwork()
   }
 
   // Latest State
 
   async getBlockNumber(): Promise<number> {
-    return this.getCached('getBlockNumber', [], () =>
-      this.provider.getBlockNumber()
-    )
+    return this.provider.getBlockNumber()
   }
 
   async getGasPrice(): Promise<BigNumber> {
-    return this.getCached('getGasPrice', [], () => this.provider.getGasPrice())
+    return this.provider.getGasPrice()
   }
 
   async getFeeData(): Promise<providers.FeeData> {
-    return this.getCached('getFeeData', [], () => this.provider.getFeeData())
+    return this.provider.getFeeData()
   }
 
   // Account
@@ -76,9 +74,12 @@ export class CachedProvider extends providers.Provider {
   ): Promise<BigNumber> {
     const address = await addressOrName
     const block = await blockTag
-    return this.getCached('getBalance', [address, block], () =>
-      this.provider.getBalance(address, block)
-    )
+    if (block) {
+      return this.getCached('getBalance', [address, block], () =>
+        this.provider.getBalance(address, block)
+      )
+    }
+    return this.provider.getBalance(address, block)
   }
 
   async getTransactionCount(
@@ -87,9 +88,12 @@ export class CachedProvider extends providers.Provider {
   ): Promise<number> {
     const address = await addressOrName
     const block = await blockTag
-    return this.getCached('getTransactionCount', [address, block], () =>
-      this.provider.getTransactionCount(address, block)
-    )
+    if (block) {
+      return this.getCached('getTransactionCount', [address, block], () =>
+        this.provider.getTransactionCount(address, block)
+      )
+    }
+    return this.provider.getTransactionCount(address, block)
   }
 
   async getCode(
@@ -98,9 +102,12 @@ export class CachedProvider extends providers.Provider {
   ): Promise<string> {
     const address = await addressOrName
     const block = await blockTag
-    return this.getCached('getCode', [address, block], () =>
-      this.provider.getCode(address, block)
-    )
+    if (block) {
+      return this.getCached('getCode', [address, block], () =>
+        this.provider.getCode(address, block)
+      )
+    }
+    return this.provider.getCode(address, block)
   }
 
   async getStorageAt(
@@ -111,9 +118,12 @@ export class CachedProvider extends providers.Provider {
     const address = await addressOrName
     const pos = await position
     const block = await blockTag
-    return this.getCached('getStorageAt', [address, pos, block], () =>
-      this.provider.getStorageAt(address, pos, block)
-    )
+    if (block) {
+      return this.getCached('getStorageAt', [address, pos, block], () =>
+        this.provider.getStorageAt(address, pos, block)
+      )
+    }
+    return this.provider.getStorageAt(address, pos, block)
   }
 
   // Execution
@@ -130,17 +140,18 @@ export class CachedProvider extends providers.Provider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> {
     const block = await blockTag
-    return this.getCached('call', [transaction, block], () =>
-      this.provider.call(transaction, block)
-    )
+    if (block) {
+      return this.getCached('call', [transaction, block], () =>
+        this.provider.call(transaction, block)
+      )
+    }
+    return this.provider.call(transaction, block)
   }
 
   async estimateGas(
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
-    return this.getCached('estimateGas', [transaction], () =>
-      this.provider.estimateGas(transaction)
-    )
+    return this.provider.estimateGas(transaction)
   }
 
   // Queries
@@ -164,43 +175,31 @@ export class CachedProvider extends providers.Provider {
   }
 
   async getTransaction(transactionHash: string): Promise<TransactionResponse> {
-    return this.getCached('getTransaction', [transactionHash], () =>
-      this.provider.getTransaction(transactionHash)
-    )
+    return this.provider.getTransaction(transactionHash)
   }
 
   async getTransactionReceipt(
     transactionHash: string
   ): Promise<providers.TransactionReceipt> {
-    return this.getCached('getTransactionReceipt', [transactionHash], () =>
-      this.provider.getTransactionReceipt(transactionHash)
-    )
+    return this.provider.getTransactionReceipt(transactionHash)
   }
 
   // Bloom-filter Queries
 
   async getLogs(filter: providers.Filter): Promise<providers.Log[]> {
-    return this.getCached('getLogs', [filter], () =>
-      this.provider.getLogs(filter)
-    )
+    return this.provider.getLogs(filter)
   }
 
   // ENS
 
   async resolveName(name: string | Promise<string>): Promise<null | string> {
-    const resolvedName = await name
-    return this.getCached('resolveName', [resolvedName], () =>
-      this.provider.resolveName(resolvedName)
-    )
+    return this.provider.resolveName(await name)
   }
 
   async lookupAddress(
     address: string | Promise<string>
   ): Promise<null | string> {
-    const resolvedAddress = await address
-    return this.getCached('lookupAddress', [resolvedAddress], () =>
-      this.provider.lookupAddress(resolvedAddress)
-    )
+    return this.provider.lookupAddress(await address)
   }
 
   // Event Emitter
