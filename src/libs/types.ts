@@ -10,6 +10,10 @@ export type LiquidityPositionStats = {
   current: CurrencyAmount<Token>[]
   deposited: CurrencyAmount<Token>[]
   avgDepositPrice: Price<Token, Token>
+  withdrawn: CurrencyAmount<Token>[]
+  avgWithdrawnPrice: Price<Token, Token> | undefined
+  collected: CurrencyAmount<Token>[]
+  avgCollectedPrice: Price<Token, Token> | undefined
 }
 
 export type LiquidityPosition = {

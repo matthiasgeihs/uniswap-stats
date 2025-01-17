@@ -4,10 +4,12 @@ import { LiquidityPositionManager } from './manager'
 import { PoolFactory } from './factory'
 import { LiquidityPool } from './pool'
 import {
+  getCollected,
   getCurrencyAmounts,
   getCurrentAmounts,
   getDeposited,
   getPriceFromSqrtPriceX96,
+  getWithdrawn,
   newTokenFromTokenAddress,
 } from './util/uniswap'
 import { tickToPrice } from '@uniswap/v3-sdk'
@@ -74,6 +76,46 @@ export async function getLiquidityPositionStats(
     token1
   )
 
+  const withdrawnRaw = await getWithdrawn(
+    provider,
+    BigNumber.from(positionId),
+    pool
+  )
+  const withdrawn = getCurrencyAmounts(
+    token0,
+    withdrawnRaw.amount0,
+    token1,
+    withdrawnRaw.amount1
+  )
+  const avgWithdrawnPrice = withdrawnRaw.avgSqrtPriceX96
+    ? getPriceFromSqrtPriceX96(
+        BigNumber.from(withdrawnRaw.avgSqrtPriceX96.toFixed(0)),
+        token0,
+        token1
+      )
+    : undefined
+
+  const collectedRaw = await getCollected(
+    provider,
+    BigNumber.from(positionId),
+    pool,
+    position.tickLower,
+    position.tickUpper
+  )
+  const collected = getCurrencyAmounts(
+    token0,
+    collectedRaw.amount0,
+    token1,
+    collectedRaw.amount1
+  )
+  const avgCollectedPrice = collectedRaw.avgSqrtPriceX96
+    ? getPriceFromSqrtPriceX96(
+        BigNumber.from(collectedRaw.avgSqrtPriceX96.toFixed(0)),
+        token0,
+        token1
+      )
+    : undefined
+
   return {
     positionId: BigNumber.from(positionId),
     lowerTickPrice,
@@ -83,5 +125,9 @@ export async function getLiquidityPositionStats(
     current,
     deposited,
     avgDepositPrice,
+    withdrawn,
+    avgWithdrawnPrice,
+    collected,
+    avgCollectedPrice,
   }
 }

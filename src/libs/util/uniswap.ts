@@ -1,7 +1,7 @@
 import { BigNumber, BigNumberish, providers } from 'ethers'
 import { CurrencyAmount, Fraction, Price, Token } from '@uniswap/sdk-core'
 import { ERC20 } from '../token'
-import { TickMath } from '@uniswap/v3-sdk'
+import { maxLiquidityForAmounts, TickMath } from '@uniswap/v3-sdk'
 import JSBI from 'jsbi'
 import { getEvents } from '../event'
 import { LiquidityPositionManager } from '../manager'
@@ -172,6 +172,155 @@ export async function getDeposited(
     JSBI.BigInt(totalWeightedPrice.toString()),
     JSBI.BigInt(totalLiquidity.toString())
   )
+  return {
+    amount0: totalAmount0,
+    amount1: totalAmount1,
+    avgSqrtPriceX96: avgPrice,
+  }
+}
+
+async function getDecreaseLiquidityEvents(
+  provider: providers.Provider,
+  tokenId: BigNumber
+) {
+  const positionManager = new LiquidityPositionManager(provider)
+  const eventFilter =
+    positionManager.contract.filters.DecreaseLiquidity(tokenId)
+
+  const logToEvent = (log: providers.Log) => {
+    const parsed = positionManager.contract.interface.parseLog(log)
+    return {
+      blockNumber: log.blockNumber,
+      tokenId: parsed.args.tokenId as BigNumber,
+      liquidity: parsed.args.liquidity as BigNumber,
+      amount0: parsed.args.amount0 as BigNumber,
+      amount1: parsed.args.amount1 as BigNumber,
+    }
+  }
+
+  const events = await getEvents(provider, tokenId, eventFilter, logToEvent)
+  return events
+}
+
+export async function getWithdrawn(
+  provider: providers.Provider,
+  positionId: BigNumber,
+  pool: LiquidityPool
+): Promise<{
+  amount0: BigNumber
+  amount1: BigNumber
+  avgSqrtPriceX96: Fraction | undefined
+}> {
+  const events = await getDecreaseLiquidityEvents(provider, positionId)
+
+  let totalAmount0 = BigNumber.from(0)
+  let totalAmount1 = BigNumber.from(0)
+  let totalLiquidity = BigNumber.from(0)
+  let totalWeightedPrice = BigNumber.from(0)
+  for (const event of events) {
+    totalAmount0 = totalAmount0.add(event.amount0)
+    totalAmount1 = totalAmount1.add(event.amount1)
+
+    const sqrtPriceX96 = (await pool.getSlot0(event.blockNumber)).sqrtPriceX96
+    totalLiquidity = totalLiquidity.add(event.liquidity)
+    totalWeightedPrice = totalWeightedPrice.add(
+      sqrtPriceX96.mul(event.liquidity)
+    )
+  }
+
+  const avgPrice = totalLiquidity.isZero()
+    ? undefined
+    : new Fraction(
+        JSBI.BigInt(totalWeightedPrice.toString()),
+        JSBI.BigInt(totalLiquidity.toString())
+      )
+  return {
+    amount0: totalAmount0,
+    amount1: totalAmount1,
+    avgSqrtPriceX96: avgPrice,
+  }
+}
+
+async function getCollectEvents(
+  provider: providers.Provider,
+  tokenId: BigNumber
+) {
+  const positionManager = new LiquidityPositionManager(provider)
+  const eventFilter = positionManager.contract.filters.Collect(tokenId)
+
+  const logToEvent = (log: providers.Log) => {
+    const parsed = positionManager.contract.interface.parseLog(log)
+    return {
+      blockNumber: log.blockNumber,
+      tokenId: parsed.args.tokenId as BigNumber,
+      recipient: parsed.args.recipient as string,
+      amount0: parsed.args.amount0 as BigNumber,
+      amount1: parsed.args.amount1 as BigNumber,
+    }
+  }
+
+  const events = await getEvents(provider, tokenId, eventFilter, logToEvent)
+  return events
+}
+
+export async function getCollected(
+  provider: providers.Provider,
+  positionId: BigNumber,
+  pool: LiquidityPool,
+  tickLower: number,
+  tickUpper: number
+): Promise<{
+  amount0: BigNumber
+  amount1: BigNumber
+  avgSqrtPriceX96: Fraction | undefined
+}> {
+  const sqrtRatioAX96 = TickMath.getSqrtRatioAtTick(tickLower)
+  const sqrtRatioBX96 = TickMath.getSqrtRatioAtTick(tickUpper)
+
+  const collect_events = await getCollectEvents(provider, positionId)
+  const decrease_events = await getDecreaseLiquidityEvents(provider, positionId)
+
+  let totalAmount0 = BigNumber.from(0)
+  let totalAmount1 = BigNumber.from(0)
+  let totalLiquidity = BigNumber.from(0)
+  let totalWeightedPrice = BigNumber.from(0)
+  for (const event of collect_events) {
+    totalAmount0 = totalAmount0.add(event.amount0)
+    totalAmount1 = totalAmount1.add(event.amount1)
+
+    const sqrtPriceX96 = (await pool.getSlot0(event.blockNumber)).sqrtPriceX96
+
+    const liquidityJSBI = maxLiquidityForAmounts(
+      JSBI.BigInt(sqrtPriceX96.toString()),
+      sqrtRatioAX96,
+      sqrtRatioBX96,
+      JSBI.BigInt(event.amount0),
+      JSBI.BigInt(event.amount1),
+      true
+    )
+    const liquidity = BigNumber.from(liquidityJSBI.toString())
+
+    totalLiquidity = totalLiquidity.add(liquidity)
+    totalWeightedPrice = totalWeightedPrice.add(sqrtPriceX96.mul(liquidity))
+  }
+
+  for (const event of decrease_events) {
+    totalAmount0 = totalAmount0.sub(event.amount0)
+    totalAmount1 = totalAmount1.sub(event.amount1)
+
+    const sqrtPriceX96 = (await pool.getSlot0(event.blockNumber)).sqrtPriceX96
+    totalLiquidity = totalLiquidity.sub(event.liquidity)
+    totalWeightedPrice = totalWeightedPrice.sub(
+      sqrtPriceX96.mul(event.liquidity)
+    )
+  }
+
+  const avgPrice = totalLiquidity.isZero()
+    ? undefined
+    : new Fraction(
+        JSBI.BigInt(totalWeightedPrice.toString()),
+        JSBI.BigInt(totalLiquidity.toString())
+      )
   return {
     amount0: totalAmount0,
     amount1: totalAmount1,

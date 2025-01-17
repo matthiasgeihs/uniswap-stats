@@ -29,6 +29,18 @@ const App = () => {
       `current: ${formatCurrencyAmounts(stats.current)}`,
       `deposited: ${formatCurrencyAmounts(stats.deposited)}`,
       `avgDepositPrice: ${formatBaseCurrencyPrice(stats.avgDepositPrice)}`,
+      `withdrawn: ${formatCurrencyAmounts(stats.withdrawn)}`,
+      `avgWithdrawnPrice: ${
+        stats.avgWithdrawnPrice
+          ? formatBaseCurrencyPrice(stats.avgWithdrawnPrice)
+          : 'N/A'
+      }`,
+      `collected: ${formatCurrencyAmounts(stats.collected)}`,
+      `avgCollectedPrice: ${
+        stats.avgCollectedPrice
+          ? formatBaseCurrencyPrice(stats.avgCollectedPrice)
+          : 'N/A'
+      }`,
     ])
   }, [stats])
 
