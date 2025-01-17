@@ -9,7 +9,7 @@ import {
 import { LiquidityPositionStats } from '../libs/types'
 
 const App = () => {
-  const [positionId, setPositionId] = useState<number | null>(1628115)
+  const [positionId, setPositionId] = useState<string>('1628115')
   const [stats, setStats] = useState<LiquidityPositionStats | null>(null)
   const [statsText, setStatsText] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -21,17 +21,20 @@ const App = () => {
     }
 
     setStatsText([
+      `positionId: ${stats.positionId.toString()}`,
       `lowerTickPrice: ${formatBaseCurrencyPrice(stats.lowerTickPrice)}`,
       `upperTickPrice: ${formatBaseCurrencyPrice(stats.upperTickPrice)}`,
       `currentPrice: ${formatBaseCurrencyPrice(stats.currentPrice)}`,
       `uncollected: ${formatCurrencyAmounts(stats.uncollected)}`,
       `current: ${formatCurrencyAmounts(stats.current)}`,
       `deposited: ${formatCurrencyAmounts(stats.deposited)}`,
+      `avgDepositPrice: ${formatBaseCurrencyPrice(stats.avgDepositPrice)}`,
     ])
   }, [stats])
 
   const handleGetStatsClick = async () => {
-    if (positionId === null) {
+    if (!positionId) {
+      alert('Please enter a Liquidity Position ID')
       return
     }
 
@@ -49,7 +52,7 @@ const App = () => {
     <div className="App">
       <input
         type="text"
-        onChange={(e) => setPositionId(parseInt(e.target.value))}
+        onChange={(e) => setPositionId(e.target.value)}
         value={positionId?.toString()}
         placeholder="Liquidity Position ID"
         style={{ textAlign: 'center' }}
@@ -64,7 +67,6 @@ const App = () => {
         (stats && (
           <div>
             <h3>Liquidity Position Stats</h3>
-            Position Id: {positionId}
             {statsText.map((stat, index) => (
               <p key={index}>{stat}</p>
             ))}

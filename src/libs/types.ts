@@ -2,12 +2,14 @@ import { CurrencyAmount, Price, Token } from '@uniswap/sdk-core'
 import { BigNumber } from 'ethers'
 
 export type LiquidityPositionStats = {
+  positionId: BigNumber
   lowerTickPrice: Price<Token, Token>
   upperTickPrice: Price<Token, Token>
   currentPrice: Price<Token, Token>
   uncollected: CurrencyAmount<Token>[]
   current: CurrencyAmount<Token>[]
   deposited: CurrencyAmount<Token>[]
+  avgDepositPrice: Price<Token, Token>
 }
 
 export type LiquidityPosition = {

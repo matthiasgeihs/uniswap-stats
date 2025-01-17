@@ -5,6 +5,7 @@ import { TickMath } from '@uniswap/v3-sdk'
 import JSBI from 'jsbi'
 import { getEvents } from '../event'
 import { LiquidityPositionManager } from '../manager'
+import { LiquidityPool } from '../pool'
 
 export function getPriceFromSqrtPriceX96(
   sqrtPriceX96: BigNumber,
@@ -129,10 +130,11 @@ async function getIncreaseLiquidityEvents(
   const logToEvent = (log: providers.Log) => {
     const parsed = positionManager.contract.interface.parseLog(log)
     return {
-      amount0: parsed.args.amount0,
-      amount1: parsed.args.amount1,
-      tickLower: parsed.args.tickLower,
-      tickUpper: parsed.args.tickUpper,
+      blockNumber: log.blockNumber,
+      tokenId: parsed.args.tokenId as BigNumber,
+      liquidity: parsed.args.liquidity as BigNumber,
+      amount0: parsed.args.amount0 as BigNumber,
+      amount1: parsed.args.amount1 as BigNumber,
     }
   }
 
@@ -142,22 +144,37 @@ async function getIncreaseLiquidityEvents(
 
 export async function getDeposited(
   provider: providers.Provider,
-  positionId: BigNumber
+  positionId: BigNumber,
+  pool: LiquidityPool
 ): Promise<{
   amount0: BigNumber
   amount1: BigNumber
-  avgPrice: Fraction
+  avgSqrtPriceX96: Fraction
 }> {
   const events = await getIncreaseLiquidityEvents(provider, positionId)
 
   let totalAmount0 = BigNumber.from(0)
   let totalAmount1 = BigNumber.from(0)
-
+  let totalLiquidity = BigNumber.from(0)
+  let totalWeightedPrice = BigNumber.from(0)
   for (const event of events) {
     totalAmount0 = totalAmount0.add(event.amount0)
     totalAmount1 = totalAmount1.add(event.amount1)
+
+    const sqrtPriceX96 = (await pool.getSlot0(event.blockNumber)).sqrtPriceX96
+    totalLiquidity = totalLiquidity.add(event.liquidity)
+    totalWeightedPrice = totalWeightedPrice.add(
+      sqrtPriceX96.mul(event.liquidity)
+    )
   }
 
-  const avgPrice = new Fraction(0) // TODO calculate from amounts and liquidity?
-  return { amount0: totalAmount0, amount1: totalAmount1, avgPrice }
+  const avgPrice = new Fraction(
+    JSBI.BigInt(totalWeightedPrice.toString()),
+    JSBI.BigInt(totalLiquidity.toString())
+  )
+  return {
+    amount0: totalAmount0,
+    amount1: totalAmount1,
+    avgSqrtPriceX96: avgPrice,
+  }
 }

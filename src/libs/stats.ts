@@ -57,20 +57,31 @@ export async function getLiquidityPositionStats(
     uncollectedRaw.amount1
   )
 
-  const depositedRaw = await getDeposited(provider, BigNumber.from(positionId))
+  const depositedRaw = await getDeposited(
+    provider,
+    BigNumber.from(positionId),
+    pool
+  )
   const deposited = getCurrencyAmounts(
     token0,
     depositedRaw.amount0,
     token1,
     depositedRaw.amount1
   )
+  const avgDepositPrice = getPriceFromSqrtPriceX96(
+    BigNumber.from(depositedRaw.avgSqrtPriceX96.toFixed(0)),
+    token0,
+    token1
+  )
 
   return {
+    positionId: BigNumber.from(positionId),
     lowerTickPrice,
     upperTickPrice,
     currentPrice,
     uncollected,
     current,
     deposited,
+    avgDepositPrice,
   }
 }
