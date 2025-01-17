@@ -150,12 +150,12 @@ export async function getDeposited(
 }> {
   const events = await getIncreaseLiquidityEvents(provider, positionId)
 
-  const totalAmount0 = BigNumber.from(0)
-  const totalAmount1 = BigNumber.from(0)
+  let totalAmount0 = BigNumber.from(0)
+  let totalAmount1 = BigNumber.from(0)
 
   for (const event of events) {
-    totalAmount0.add(event.amount0)
-    totalAmount1.add(event.amount1)
+    totalAmount0 = totalAmount0.add(event.amount0)
+    totalAmount1 = totalAmount1.add(event.amount1)
   }
 
   const avgPrice = new Fraction(0) // TODO calculate from amounts and liquidity?

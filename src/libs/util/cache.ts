@@ -203,7 +203,13 @@ export class CachedProvider extends providers.Provider {
   // Bloom-filter Queries
 
   async getLogs(filter: providers.Filter): Promise<providers.Log[]> {
-    return this.provider.getLogs(filter)
+    if (!filter.toBlock) {
+      return this.provider.getLogs(filter)
+    }
+
+    return this.getCached('getLogs', [filter], () =>
+      this.provider.getLogs(filter)
+    )
   }
 
   // ENS
