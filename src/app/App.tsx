@@ -79,9 +79,16 @@ const App = () => {
         (stats && (
           <div>
             <h3>Liquidity Position Stats</h3>
-            {statsText.map((stat, index) => (
-              <p key={index}>{stat}</p>
-            ))}
+            <table style={{ textAlign: 'left' }}>
+              <tbody>
+                {statsText.map((stat, index) => (
+                  <tr key={index}>
+                    <td>{stat.split(': ')[0]}</td>
+                    <td>{stat.split(': ')[1]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ))}
     </div>
