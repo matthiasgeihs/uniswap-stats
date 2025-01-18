@@ -22,29 +22,24 @@ const App = () => {
 
     setStatsText([
       `positionId: ${stats.positionId.toString()}`,
-      `lowerTickPrice: ${formatBaseCurrencyPrice(stats.lowerTickPrice)}`,
-      `upperTickPrice: ${formatBaseCurrencyPrice(stats.upperTickPrice)}`,
-      `currentPrice: ${formatBaseCurrencyPrice(stats.currentPrice)}`,
-      `uncollected: ${formatCurrencyAmounts(stats.uncollected)}`,
-      `current: ${formatCurrencyAmounts(stats.current)}`,
-      `deposited: ${formatCurrencyAmounts(stats.deposited)}`,
-      `avgDepositPrice: ${formatBaseCurrencyPrice(stats.avgDepositPrice)}`,
-      `withdrawn: ${formatCurrencyAmounts(stats.withdrawn)}`,
-      `avgWithdrawnPrice: ${
+      `range: ${formatBaseCurrencyPrice(
+        stats.lowerTickPrice
+      )} ${formatBaseCurrencyPrice(stats.upperTickPrice)}`,
+      `deposited: ${formatCurrencyAmounts(
+        stats.deposited
+      )} (at ${formatBaseCurrencyPrice(stats.avgDepositPrice)})`,
+      `withdrawn: ${formatCurrencyAmounts(stats.withdrawn)} (at ${
         stats.avgWithdrawnPrice
           ? formatBaseCurrencyPrice(stats.avgWithdrawnPrice)
           : 'N/A'
-      }`,
-      `collected: ${formatCurrencyAmounts(stats.collected)}`,
-      `avgCollectedPrice: ${
-        stats.avgCollectedPrice
-          ? formatBaseCurrencyPrice(stats.avgCollectedPrice)
-          : 'N/A'
-      }`,
-      `dateOpened: ${stats.dateOpened.toString()}`,
-      `dateClosed: ${stats.dateClosed ? stats.dateClosed.toString() : 'N/A'}`,
-      `durationPositionHeld: ${stats.durationPositionHeld / 86_400_000} days`,
-      `totalYield: ${formatCurrencyAmounts(stats.totalYield)}`,
+      })`,
+      `current: ${formatCurrencyAmounts(
+        stats.current
+      )} (at ${formatBaseCurrencyPrice(stats.currentPrice)})`,
+      `yield: ${formatCurrencyAmounts(stats.totalYield)}`,
+      `dateRange: ${stats.dateOpened.toLocaleString()} ${
+        stats.dateClosed ? stats.dateClosed.toLocaleString() : 'N/A'
+      } (${(stats.durationPositionHeld / 86_400_000).toFixed(1)} days)`,
       `yieldPerDay: ${formatCurrencyAmounts(stats.yieldPerDay)}`,
     ])
   }, [stats])
