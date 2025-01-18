@@ -41,6 +41,11 @@ const App = () => {
           ? formatBaseCurrencyPrice(stats.avgCollectedPrice)
           : 'N/A'
       }`,
+      `dateOpened: ${stats.dateOpened.toString()}`,
+      `dateClosed: ${stats.dateClosed ? stats.dateClosed.toString() : 'N/A'}`,
+      `durationPositionHeld: ${stats.durationPositionHeld / 86_400_000} days`,
+      `totalYield: ${formatCurrencyAmounts(stats.totalYield)}`,
+      `yieldPerDay: ${formatCurrencyAmounts(stats.yieldPerDay)}`,
     ])
   }, [stats])
 

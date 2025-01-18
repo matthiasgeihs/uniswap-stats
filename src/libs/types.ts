@@ -14,6 +14,11 @@ export type LiquidityPositionStats = {
   avgWithdrawnPrice: Price<Token, Token> | undefined
   collected: CurrencyAmount<Token>[]
   avgCollectedPrice: Price<Token, Token> | undefined
+  dateOpened: Date
+  dateClosed: Date | undefined
+  durationPositionHeld: number
+  totalYield: CurrencyAmount<Token>[]
+  yieldPerDay: CurrencyAmount<Token>[]
 }
 
 export type LiquidityPosition = {

@@ -146,11 +146,7 @@ export async function getDeposited(
   provider: providers.Provider,
   positionId: BigNumber,
   pool: LiquidityPool
-): Promise<{
-  amount0: BigNumber
-  amount1: BigNumber
-  avgSqrtPriceX96: Fraction
-}> {
+) {
   const events = await getIncreaseLiquidityEvents(provider, positionId)
 
   let totalAmount0 = BigNumber.from(0)
@@ -172,10 +168,17 @@ export async function getDeposited(
     JSBI.BigInt(totalWeightedPrice.toString()),
     JSBI.BigInt(totalLiquidity.toString())
   )
+
+  const dateFirstEvent = await (async () => {
+    const firstBlock = await provider.getBlock(events[0].blockNumber)
+    return new Date(firstBlock.timestamp * 1000)
+  })()
+
   return {
     amount0: totalAmount0,
     amount1: totalAmount1,
     avgSqrtPriceX96: avgPrice,
+    dateFirstDeposited: dateFirstEvent,
   }
 }
 
@@ -206,11 +209,7 @@ export async function getWithdrawn(
   provider: providers.Provider,
   positionId: BigNumber,
   pool: LiquidityPool
-): Promise<{
-  amount0: BigNumber
-  amount1: BigNumber
-  avgSqrtPriceX96: Fraction | undefined
-}> {
+) {
   const events = await getDecreaseLiquidityEvents(provider, positionId)
 
   let totalAmount0 = BigNumber.from(0)
@@ -234,10 +233,23 @@ export async function getWithdrawn(
         JSBI.BigInt(totalWeightedPrice.toString()),
         JSBI.BigInt(totalLiquidity.toString())
       )
+
+  const dateLastEvent = await (async () => {
+    if (events.length == 0) {
+      return undefined
+    }
+
+    const lastBlock = await provider.getBlock(
+      events[events.length - 1].blockNumber
+    )
+    return new Date(lastBlock.timestamp * 1000)
+  })()
+
   return {
     amount0: totalAmount0,
     amount1: totalAmount1,
     avgSqrtPriceX96: avgPrice,
+    dateLastWithdrawn: dateLastEvent,
   }
 }
 
@@ -269,11 +281,7 @@ export async function getCollected(
   pool: LiquidityPool,
   tickLower: number,
   tickUpper: number
-): Promise<{
-  amount0: BigNumber
-  amount1: BigNumber
-  avgSqrtPriceX96: Fraction | undefined
-}> {
+) {
   const sqrtRatioAX96 = TickMath.getSqrtRatioAtTick(tickLower)
   const sqrtRatioBX96 = TickMath.getSqrtRatioAtTick(tickUpper)
 

@@ -116,6 +116,15 @@ export async function getLiquidityPositionStats(
       )
     : undefined
 
+  const totalYield = collected.map((v, i) => v.add(uncollected[i]))
+  const durationPositionHeld = (() => {
+    const endDate = withdrawnRaw.dateLastWithdrawn || new Date()
+    return endDate.getTime() - depositedRaw.dateFirstDeposited.getTime()
+  })()
+  const yieldPerDay = totalYield.map((v) =>
+    v.multiply(86_400_000).divide(durationPositionHeld)
+  )
+
   return {
     positionId: BigNumber.from(positionId),
     lowerTickPrice,
@@ -129,5 +138,10 @@ export async function getLiquidityPositionStats(
     avgWithdrawnPrice,
     collected,
     avgCollectedPrice,
+    dateOpened: depositedRaw.dateFirstDeposited,
+    dateClosed: withdrawnRaw.dateLastWithdrawn,
+    totalYield,
+    durationPositionHeld,
+    yieldPerDay,
   }
 }
