@@ -18,6 +18,7 @@ export type LiquidityPositionStats = {
   dateClosed: Date | undefined
   durationPositionHeld: number
   totalYield: CurrencyAmount<Token>[]
+  avgYieldPrice: Price<Token, Token>
   yieldPerDay: CurrencyAmount<Token>[]
   apr: Fraction[]
 }

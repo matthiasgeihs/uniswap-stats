@@ -53,6 +53,40 @@ export function formatCurrencyAmounts(
     .join(' ')
 }
 
+export function formatCurrencyAmountsWithQuote(
+  amounts: CurrencyAmount<Token>[],
+  price: Price<Token, Token> | undefined
+): string {
+  const quoteInfo = (() => {
+    if (!price) {
+      return 'N/A'
+    }
+    const quoteAmount = toQuoteCurrencyAmount(amounts, price)
+    return `= ${formatCurrencyAmounts([
+      quoteAmount,
+    ])} at ${formatBaseCurrencyPrice(price)}`
+  })()
+
+  return `${formatCurrencyAmounts(amounts)} (${quoteInfo})`
+}
+
+export function toQuoteCurrencyAmount(
+  amounts: CurrencyAmount<Token>[],
+  price: Price<Token, Token>
+): CurrencyAmount<Token> {
+  const quoteCurrencyIndex = amounts.findIndex((amount) =>
+    amount.currency.equals(price.quoteCurrency)
+  )
+  if (quoteCurrencyIndex === -1) {
+    throw new Error('Could not find quote currency in deposited amounts')
+  }
+  return amounts.reduce(
+    (acc, amount, i) =>
+      i == quoteCurrencyIndex ? acc.add(amount) : acc.add(price.quote(amount)),
+    CurrencyAmount.fromRawAmount(price.quoteCurrency, 0)
+  )
+}
+
 export function getCurrencyAmounts(
   token0: Token,
   amount0: BigNumberish,

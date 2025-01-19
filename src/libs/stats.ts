@@ -11,8 +11,11 @@ import {
   getPriceFromSqrtPriceX96,
   getWithdrawn,
   newTokenFromTokenAddress,
+  toQuoteCurrencyAmount,
 } from './util/uniswap'
 import { tickToPrice } from '@uniswap/v3-sdk'
+import { QUOTER_V2_ADDRESSES } from '@uniswap/smart-order-router'
+import { Price } from '@uniswap/sdk-core'
 
 export async function getLiquidityPositionStats(
   provider: providers.Provider,
@@ -117,6 +120,32 @@ export async function getLiquidityPositionStats(
     : undefined
 
   const totalYield = collected.map((v, i) => v.add(uncollected[i]))
+  const avgYieldPrice = (() => {
+    if (!avgCollectedPrice) {
+      return currentPrice
+    }
+
+    const collectedQuoteAmount = toQuoteCurrencyAmount(
+      collected,
+      avgCollectedPrice
+    )
+    const uncollectedQuoteAmount = toQuoteCurrencyAmount(
+      uncollected,
+      currentPrice
+    )
+    const totalQuoteAmount = collectedQuoteAmount.add(uncollectedQuoteAmount)
+    const priceFrac = avgCollectedPrice.asFraction
+      .multiply(collectedQuoteAmount)
+      .add(currentPrice.asFraction.multiply(uncollectedQuoteAmount))
+      .divide(totalQuoteAmount)
+
+    return new Price(
+      avgCollectedPrice.baseCurrency,
+      avgCollectedPrice.quoteCurrency,
+      priceFrac.denominator,
+      priceFrac.numerator
+    )
+  })()
   const durationPositionHeld = (() => {
     const endDate = withdrawnRaw.dateLastWithdrawn || new Date()
     return endDate.getTime() - depositedRaw.dateFirstDeposited.getTime()
@@ -145,6 +174,7 @@ export async function getLiquidityPositionStats(
     dateOpened: depositedRaw.dateFirstDeposited,
     dateClosed: withdrawnRaw.dateLastWithdrawn,
     totalYield,
+    avgYieldPrice,
     durationPositionHeld,
     yieldPerDay,
     apr,
