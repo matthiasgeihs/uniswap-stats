@@ -14,9 +14,7 @@ export function getPriceFromSqrtPriceX96(
 ): Price<Token, Token> {
   const ratioX192 = sqrtPriceX96.pow(2).toString()
   const Q192 = BigNumber.from(2).pow(192).toString()
-  return baseToken.sortsBefore(quoteToken)
-    ? new Price(baseToken, quoteToken, Q192, ratioX192)
-    : new Price(baseToken, quoteToken, ratioX192, Q192)
+  return new Price(baseToken, quoteToken, Q192, ratioX192)
 }
 
 export async function newTokenFromTokenAddress(
