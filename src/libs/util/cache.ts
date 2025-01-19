@@ -90,7 +90,7 @@ export class CachedProvider extends providers.Provider {
   ): Promise<BigNumber> {
     const address = await addressOrName
     const block = await blockTag
-    if (block) {
+    if (block !== undefined) {
       return this.getCached('getBalance', [address, block], () =>
         this.provider.getBalance(address, block)
       )
@@ -104,7 +104,7 @@ export class CachedProvider extends providers.Provider {
   ): Promise<number> {
     const address = await addressOrName
     const block = await blockTag
-    if (block) {
+    if (block !== undefined) {
       return this.getCached('getTransactionCount', [address, block], () =>
         this.provider.getTransactionCount(address, block)
       )
@@ -118,7 +118,7 @@ export class CachedProvider extends providers.Provider {
   ): Promise<string> {
     const address = await addressOrName
     const block = await blockTag
-    if (block) {
+    if (block !== undefined) {
       return this.getCached('getCode', [address, block], () =>
         this.provider.getCode(address, block)
       )
@@ -134,7 +134,7 @@ export class CachedProvider extends providers.Provider {
     const address = await addressOrName
     const pos = await position
     const block = await blockTag
-    if (block) {
+    if (block !== undefined) {
       return this.getCached('getStorageAt', [address, pos, block], () =>
         this.provider.getStorageAt(address, pos, block)
       )
@@ -156,7 +156,7 @@ export class CachedProvider extends providers.Provider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> {
     const block = await blockTag
-    if (block) {
+    if (block !== undefined) {
       return this.getCached('call', [transaction, block], () =>
         this.provider.call(transaction, block)
       )
@@ -203,7 +203,7 @@ export class CachedProvider extends providers.Provider {
   // Bloom-filter Queries
 
   async getLogs(filter: providers.Filter): Promise<providers.Log[]> {
-    if (!filter.toBlock) {
+    if (filter.toBlock === undefined) {
       return this.provider.getLogs(filter)
     }
 
