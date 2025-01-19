@@ -1,4 +1,4 @@
-import { CurrencyAmount, Price, Token } from '@uniswap/sdk-core'
+import { CurrencyAmount, Fraction, Price, Token } from '@uniswap/sdk-core'
 import { BigNumber } from 'ethers'
 
 export type LiquidityPositionStats = {
@@ -19,6 +19,7 @@ export type LiquidityPositionStats = {
   durationPositionHeld: number
   totalYield: CurrencyAmount<Token>[]
   yieldPerDay: CurrencyAmount<Token>[]
+  apr: Fraction[]
 }
 
 export type LiquidityPosition = {

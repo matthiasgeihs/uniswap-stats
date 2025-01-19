@@ -20,6 +20,10 @@ const App = () => {
       return
     }
 
+    const apr = stats.apr
+      .map((apr) => `${apr.multiply(100).toFixed(2)}%`)
+      .join(' ')
+
     setStatsText([
       `positionId: ${stats.positionId.toString()}`,
       `range: ${formatBaseCurrencyPrice(
@@ -41,6 +45,7 @@ const App = () => {
         stats.dateClosed ? stats.dateClosed.toLocaleString() : 'N/A'
       } (${(stats.durationPositionHeld / 86_400_000).toFixed(1)} days)`,
       `yieldPerDay: ${formatCurrencyAmounts(stats.yieldPerDay)}`,
+      `apr: ${apr}`,
     ])
   }, [stats])
 

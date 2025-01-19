@@ -125,6 +125,10 @@ export async function getLiquidityPositionStats(
     v.multiply(86_400_000).divide(durationPositionHeld)
   )
 
+  const apr = yieldPerDay.map(
+    (v, i) => v.divide(deposited[i]).multiply(365).asFraction
+  )
+
   return {
     positionId: BigNumber.from(positionId),
     lowerTickPrice,
@@ -143,5 +147,6 @@ export async function getLiquidityPositionStats(
     totalYield,
     durationPositionHeld,
     yieldPerDay,
+    apr,
   }
 }
