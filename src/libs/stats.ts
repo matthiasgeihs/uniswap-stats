@@ -14,7 +14,6 @@ import {
   toQuoteCurrencyAmount,
 } from './util/uniswap'
 import { tickToPrice } from '@uniswap/v3-sdk'
-import { QUOTER_V2_ADDRESSES } from '@uniswap/smart-order-router'
 import { Price } from '@uniswap/sdk-core'
 
 export async function getLiquidityPositionStats(
