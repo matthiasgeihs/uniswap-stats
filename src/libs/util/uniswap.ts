@@ -181,6 +181,10 @@ export async function getDeposited(
 ) {
   const events = await getIncreaseLiquidityEvents(provider, positionId)
 
+  if (events.length == 0) {
+    throw new Error('No deposits found')
+  }
+
   let totalAmount0 = BigNumber.from(0)
   let totalAmount1 = BigNumber.from(0)
   let totalLiquidity = BigNumber.from(0)
