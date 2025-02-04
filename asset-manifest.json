@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "https://matthiasgeihs.github.io/uniswap-stats/static/css/main.3ff5adda.css",
-    "main.js": "https://matthiasgeihs.github.io/uniswap-stats/static/js/main.0a65a68d.js",
+    "main.js": "https://matthiasgeihs.github.io/uniswap-stats/static/js/main.4fa6bb96.js",
     "index.html": "https://matthiasgeihs.github.io/uniswap-stats/index.html",
     "main.3ff5adda.css.map": "https://matthiasgeihs.github.io/uniswap-stats/static/css/main.3ff5adda.css.map",
-    "main.0a65a68d.js.map": "https://matthiasgeihs.github.io/uniswap-stats/static/js/main.0a65a68d.js.map"
+    "main.4fa6bb96.js.map": "https://matthiasgeihs.github.io/uniswap-stats/static/js/main.4fa6bb96.js.map"
   },
   "entrypoints": [
     "static/css/main.3ff5adda.css",
-    "static/js/main.0a65a68d.js"
+    "static/js/main.4fa6bb96.js"
   ]
 }
