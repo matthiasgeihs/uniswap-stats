@@ -321,8 +321,10 @@ export async function getCollected(
   const sqrtRatioAX96 = TickMath.getSqrtRatioAtTick(tickLower)
   const sqrtRatioBX96 = TickMath.getSqrtRatioAtTick(tickUpper)
 
-  const collect_events = await getCollectEvents(provider, positionId)
-  const decrease_events = await getDecreaseLiquidityEvents(provider, positionId)
+  const [collect_events, decrease_events] = await Promise.all([
+    getCollectEvents(provider, positionId),
+    getDecreaseLiquidityEvents(provider, positionId),
+  ])
 
   let totalAmount0 = BigNumber.from(0)
   let totalAmount1 = BigNumber.from(0)
