@@ -93,6 +93,8 @@ const App = () => {
       const provider = getProvider()
       const stats = await getLiquidityPositionStats(provider, positionId)
       setStats(stats)
+    } catch (error) {
+      alert(error)
     } finally {
       setLoading(false)
     }
