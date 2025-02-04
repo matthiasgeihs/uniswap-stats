@@ -9,9 +9,12 @@ import {
 } from '../libs/util/uniswap'
 import { LiquidityPositionStats } from '../libs/types'
 import { Fraction, Token } from '@uniswap/sdk-core'
+import { getURLParamPositionId } from '../libs/util/url'
 
 const App = () => {
-  const [positionId, setPositionId] = useState<string>('1628115')
+  const [positionId, setPositionId] = useState<string>(
+    getURLParamPositionId() || '1628115'
+  )
   const [stats, setStats] = useState<LiquidityPositionStats | null>(null)
   const [statsText, setStatsText] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
